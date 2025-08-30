@@ -1,8 +1,9 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { signInSchema, signUpSchema } from "../schema/users.schema";
+import { signInSchema, signUpSchema } from "../schema/auth.schema";
 import { z } from "zod";
+import { authClient } from "@/lib/auth-client";
 
 export const signIn = async (data: z.infer<typeof signInSchema>) => {
   try {
@@ -24,7 +25,7 @@ export const signIn = async (data: z.infer<typeof signInSchema>) => {
   }
 };
 
-export const signUp = async (data : z.infer<typeof signUpSchema>) => {
+export const signUp = async (data: z.infer<typeof signUpSchema>) => {
   try {
     await auth.api.signUpEmail({
       body: {
@@ -42,4 +43,18 @@ export const signUp = async (data : z.infer<typeof signUpSchema>) => {
       message: err?.message || "An unknown error occurred.",
     };
   }
+};
+
+export const signInWithGithub = async () => {
+  await authClient.signIn.social({
+    provider: "github",
+    callbackURL: "/dashboard",
+  });
+};
+
+export const signInWithGoogle = async () => {
+  await authClient.signIn.social({
+    provider: "google",
+    callbackURL: "/dashboard",
+  });
 };

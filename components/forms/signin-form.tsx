@@ -21,8 +21,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { signIn } from "@/server/users";
-import { signInSchema } from "@/schema/users.schema";
+import { signIn, signInWithGoogle } from "@/server/auth";
+import { signInSchema } from "@/schema/auth.schema";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -46,12 +46,7 @@ export function LoginForm({
     },
   });
 
-  const signInWithGoogle = async () => {
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: "/dashboard",
-    });
-  };
+
 
   async function onSubmit(values: z.infer<typeof signInSchema>) {
     setIsLoading(true);

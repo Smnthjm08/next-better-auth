@@ -18,6 +18,7 @@ model User {
   id            String    @id
   name          String
   email         String
+  slug          String?    @unique
   emailVerified Boolean
   image         String?
   createdAt     DateTime

@@ -2,6 +2,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { betterAuth } from "better-auth";
 import prisma from "@/db/prisma";
 import { nextCookies } from "better-auth/next-js";
+import { customSession } from "better-auth/plugins";
+import { getUserSlugById } from "@/server/user";
 
 export const auth = betterAuth({
   socialProviders: {
@@ -17,5 +19,19 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  plugins: [nextCookies()],
+  plugins: [
+    nextCookies(),
+    customSession(async ({ user, session }) => {
+      const slug = await getUserSlugById(user?.id);
+      
+      return {
+        user: {
+          ...user,
+          slug: slug,
+        },
+        session
+      };
+    }),
+  ],
 });
+

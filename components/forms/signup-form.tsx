@@ -21,13 +21,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { signIn, signUp } from "@/server/users";
-import { signUpSchema } from "@/schema/users.schema";
+import { signInWithGoogle, signUp } from "@/server/auth";
+import { signUpSchema } from "@/schema/auth.schema";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { getCurrentUser } from "@/server/user";
 
 export function RegisterForm({
   className,
@@ -46,13 +48,6 @@ export function RegisterForm({
     },
   });
 
-  const signInWithGoogle = async () => {
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: "/dashboard",
-    });
-  };
-
   async function onSubmit(values: z.infer<typeof signUpSchema>) {
     setIsLoading(true);
     const { success, message } = await signUp({
@@ -63,7 +58,13 @@ export function RegisterForm({
 
     if (success) {
       toast.success(message ?? "Logged in successfully!");
-      router.push("/dashboard");
+      const user = await getCurrentUser();
+
+      if (!user?.slug) {
+        router.push("/onboarding");
+      } else{
+        router.push(`/${user?.slug}`);
+      }
     } else {
       toast.error(message as string);
     }
@@ -166,7 +167,7 @@ export function RegisterForm({
 
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}
-                  <Link href="/sigin" className="underline underline-offset-4">
+                  <Link href="/signin" className="underline underline-offset-4">
                     Sign In
                   </Link>
                 </div>

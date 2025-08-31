@@ -21,14 +21,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { signIn } from "@/server/users";
-import { signInSchema } from "@/schema/users.schema";
+import { signIn, signInWithGoogle } from "@/server/auth";
+import { signInSchema } from "@/schema/auth.schema";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client";
 import { Globe2 } from "lucide-react";
 import Link from "next/link";
+import { getCurrentUser } from "@/server/user";
 
 export function LoginForm({
   className,
@@ -46,13 +46,6 @@ export function LoginForm({
     },
   });
 
-  const signInWithGoogle = async () => {
-    await authClient.signIn.social({
-      provider: "google",
-      callbackURL: "/dashboard",
-    });
-  };
-
   async function onSubmit(values: z.infer<typeof signInSchema>) {
     setIsLoading(true);
     const { success, message } = await signIn({
@@ -62,7 +55,14 @@ export function LoginForm({
 
     if (success) {
       toast.success(message ?? "Logged in successfully!");
-      router.push("/dashboard");
+      // router.push("/dashboard");
+      const user = await getCurrentUser();
+
+      if (!user?.slug) {
+        router.push("/onboarding");
+      } else {
+        router.push(`/${user?.slug}`);
+      }
     } else {
       toast.error(message as string);
     }
@@ -156,7 +156,6 @@ export function LoginForm({
                 </div>
               </form>
             </Form>
-            
           </div>
         </CardContent>
       </Card>
